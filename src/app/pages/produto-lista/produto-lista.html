@@ -1,0 +1,157 @@
+<section class="space-y-8">
+  <!-- Cabeçalho -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight text-stone-900">Meus produtos</h1>
+      <p class="mt-1 text-stone-500">Cadastre seus produtos e descubra o custo real de cada um.</p>
+    </div>
+    <a
+      routerLink="/produtos/novo"
+      class="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-5 py-3 font-semibold text-white shadow-sm shadow-amber-200 transition hover:bg-amber-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-200"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+      </svg>
+      Novo produto
+    </a>
+  </div>
+
+  @if (totalProdutos() > 0) {
+    <!-- Indicadores -->
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-stone-200 bg-white p-5">
+        <p class="text-sm font-medium text-stone-500">Produtos cadastrados</p>
+        <p class="mt-1 text-3xl font-bold text-stone-900">{{ totalProdutos() }}</p>
+      </div>
+      <div class="rounded-2xl border border-stone-200 bg-white p-5">
+        <p class="text-sm font-medium text-stone-500">Custo médio por unidade</p>
+        <p class="mt-1 text-3xl font-bold text-stone-900">{{ custoMedio() | currency: 'BRL' }}</p>
+      </div>
+    </div>
+
+    <!-- Busca -->
+    <div class="relative">
+      <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-stone-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+      </svg>
+      <input
+        type="search"
+        placeholder="Buscar por produto ou ingrediente..."
+        [value]="busca()"
+        (input)="busca.set($any($event.target).value)"
+        class="w-full rounded-xl border border-stone-200 bg-white py-3 pl-12 pr-4 text-stone-900 placeholder:text-stone-400 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+      />
+    </div>
+
+    <!-- Lista -->
+    @if (filtrados().length) {
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        @for (r of filtrados(); track r.produto.id) {
+          <article class="group flex flex-col rounded-2xl border border-stone-200 bg-white p-5 transition hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100/50">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h2 class="truncate text-lg font-semibold text-stone-900">{{ r.produto.nome }}</h2>
+                <p class="text-sm text-stone-500">
+                  {{ r.produto.ingredientes.length }}
+                  {{ r.produto.ingredientes.length === 1 ? 'ingrediente' : 'ingredientes' }}
+                  @if (r.produto.rendimento > 1) {
+                    · rende {{ r.produto.rendimento }} un
+                  }
+                </p>
+              </div>
+              <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                {{ r.produto.atualizadoEm | date: 'dd/MM/yy' }}
+              </span>
+            </div>
+
+            @if (r.produto.ingredientes.length) {
+              <ul class="mt-4 flex flex-wrap gap-1.5">
+                @for (ing of r.produto.ingredientes.slice(0, 4); track ing.id) {
+                  <li class="rounded-md bg-stone-100 px-2 py-0.5 text-xs text-stone-600">{{ ing.nome }}</li>
+                }
+                @if (r.produto.ingredientes.length > 4) {
+                  <li class="rounded-md bg-stone-100 px-2 py-0.5 text-xs text-stone-500">+{{ r.produto.ingredientes.length - 4 }}</li>
+                }
+              </ul>
+            }
+
+            <dl class="mt-5 grid grid-cols-2 gap-3 border-t border-stone-100 pt-4">
+              <div>
+                <dt class="text-xs font-medium uppercase tracking-wide text-stone-400">
+                  {{ r.produto.rendimento > 1 ? 'Custo / un' : 'Custo total' }}
+                </dt>
+                <dd class="text-xl font-bold text-stone-900">{{ r.porUnidade | currency: 'BRL' }}</dd>
+              </div>
+              @if (r.produto.margemLucro > 0) {
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-stone-400">Venda (+{{ r.produto.margemLucro }}%)</dt>
+                  <dd class="text-xl font-bold text-emerald-600">{{ r.sugerido | currency: 'BRL' }}</dd>
+                </div>
+              }
+            </dl>
+
+            <div class="mt-5 flex items-center gap-2 pt-1">
+              <a
+                [routerLink]="['/produtos', r.produto.id]"
+                class="flex-1 rounded-lg bg-stone-900 px-3 py-2 text-center text-sm font-medium text-white transition hover:bg-stone-700"
+              >Editar</a>
+              <button
+                type="button"
+                (click)="duplicar(r.produto.id)"
+                title="Duplicar"
+                class="rounded-lg border border-stone-200 p-2 text-stone-500 transition hover:bg-stone-50 hover:text-stone-900"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z" />
+                  <path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                (click)="pedirExclusao(r.produto.id)"
+                title="Excluir"
+                class="rounded-lg border border-stone-200 p-2 text-stone-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <p class="rounded-2xl border border-dashed border-stone-300 p-10 text-center text-stone-500">
+        Nenhum produto encontrado para "<span class="font-medium text-stone-700">{{ busca() }}</span>".
+      </p>
+    }
+  } @else {
+    <!-- Estado vazio -->
+    <div class="flex flex-col items-center rounded-3xl border-2 border-dashed border-stone-200 bg-white px-6 py-16 text-center">
+      <div class="flex size-16 items-center justify-center rounded-2xl bg-amber-100 text-3xl">🧁</div>
+      <h2 class="mt-5 text-xl font-semibold text-stone-900">Nenhum produto cadastrado ainda</h2>
+      <p class="mt-2 max-w-md text-stone-500">
+        Comece cadastrando um produto e os ingredientes usados nele. A gente soma tudo e mostra o preço de custo final.
+      </p>
+      <a
+        routerLink="/produtos/novo"
+        class="mt-6 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-3 font-semibold text-white transition hover:bg-amber-600"
+      >Cadastrar primeiro produto</a>
+    </div>
+  }
+</section>
+
+<!-- Modal de confirmação -->
+@if (confirmandoExclusao()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4 backdrop-blur-sm" (click)="confirmandoExclusao.set(null)">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-semibold text-stone-900">Excluir produto?</h3>
+      <p class="mt-2 text-sm text-stone-500">Essa ação não pode ser desfeita.</p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button type="button" (click)="confirmandoExclusao.set(null)" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100">Cancelar</button>
+        <button type="button" (click)="confirmarExclusao()" class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">Excluir</button>
+      </div>
+    </div>
+  </div>
+}
+

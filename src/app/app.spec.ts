@@ -1,10 +1,17 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { App } from './app';
+import { ProdutoRepository } from './data/produto.repository';
+import { LocalStorageProdutoRepository } from './data/local-storage-produto.repository';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+        provideRouter([]),
+        { provide: ProdutoRepository, useClass: LocalStorageProdutoRepository },
+      ],
     })
       .compileComponents();
   });
@@ -15,10 +22,10 @@ describe('App', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should render the header brand', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, calculadora-preco');
+    expect(compiled.querySelector('header')?.textContent).toContain('Calculadora de Preço');
   });
 });

@@ -1,0 +1,309 @@
+@if (naoEncontrado()) {
+  <div class="rounded-3xl border border-stone-200 bg-white px-6 py-16 text-center">
+    <h1 class="text-xl font-semibold text-stone-900">Produto não encontrado</h1>
+    <p class="mt-2 text-stone-500">Ele pode ter sido excluído.</p>
+    <a routerLink="/produtos" class="mt-6 inline-block rounded-xl bg-stone-900 px-5 py-3 font-medium text-white hover:bg-stone-700">Voltar para a lista</a>
+  </div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="salvar()" novalidate>
+    <!-- Cabeçalho -->
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <a routerLink="/produtos" class="inline-flex items-center gap-1 text-sm font-medium text-stone-500 hover:text-stone-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
+          </svg>
+          Voltar
+        </a>
+        <h1 class="mt-1 text-3xl font-bold tracking-tight text-stone-900">
+          {{ editando ? 'Editar produto' : 'Novo produto' }}
+        </h1>
+      </div>
+      <div class="flex gap-2">
+        <a routerLink="/produtos" class="rounded-xl border border-stone-200 bg-white px-5 py-3 font-medium text-stone-700 hover:bg-stone-50">Cancelar</a>
+        <button type="submit" [disabled]="salvando()" class="rounded-xl bg-amber-500 px-5 py-3 font-semibold text-white shadow-sm shadow-amber-200 transition hover:bg-amber-600 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-200 disabled:cursor-wait disabled:opacity-70">
+          {{ salvando() ? 'Salvando...' : 'Salvar produto' }}
+        </button>
+      </div>
+    </div>
+
+    @if (erroAoSalvar()) {
+      <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ erroAoSalvar() }}</div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div class="space-y-6">
+        <!-- Dados do produto -->
+        <section class="rounded-2xl border border-stone-200 bg-white p-6">
+          <h2 class="text-lg font-semibold text-stone-900">Dados do produto</h2>
+          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            <label class="block sm:col-span-2">
+              <span class="text-sm font-medium text-stone-700">Nome do produto *</span>
+              <input
+                formControlName="nome"
+                placeholder="Ex.: Bolo de cenoura com chocolate"
+                class="mt-1.5 w-full rounded-xl border bg-white px-4 py-2.5 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-4"
+                [class]="campoInvalido(form.controls.nome) ? 'border-red-300 focus:ring-red-100' : 'border-stone-200 focus:border-amber-400 focus:ring-amber-100'"
+              />
+              @if (campoInvalido(form.controls.nome)) {
+                <span class="mt-1 block text-sm text-red-600">Informe o nome do produto.</span>
+              }
+            </label>
+
+            <label class="block sm:col-span-2">
+              <span class="text-sm font-medium text-stone-700">Descrição <span class="font-normal text-stone-400">(opcional)</span></span>
+              <textarea
+                formControlName="descricao"
+                rows="2"
+                placeholder="Observações, tamanho da forma, etc."
+                class="mt-1.5 w-full resize-none rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+              ></textarea>
+            </label>
+
+            <label class="block">
+              <span class="text-sm font-medium text-stone-700">Rendimento</span>
+              <div class="relative mt-1.5">
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  formControlName="rendimento"
+                  class="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-4 pr-20 text-stone-900 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+                />
+                <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-stone-400">unidades</span>
+              </div>
+              <span class="mt-1 block text-xs text-stone-400">Quantas unidades essa receita rende.</span>
+            </label>
+
+            <label class="block">
+              <span class="text-sm font-medium text-stone-700">Margem de lucro</span>
+              <div class="relative mt-1.5">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  formControlName="margemLucro"
+                  class="w-full rounded-xl border border-stone-200 bg-white py-2.5 pl-4 pr-10 text-stone-900 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+                />
+                <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-stone-400">%</span>
+              </div>
+              <span class="mt-1 block text-xs text-stone-400">Usada para sugerir o preço de venda.</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Ingredientes -->
+        <section class="rounded-2xl border border-stone-200 bg-white p-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-stone-900">Ingredientes / insumos</h2>
+              <p class="text-sm text-stone-500">Informe o preço por kg, litro ou unidade e quanto foi usado.</p>
+            </div>
+          </div>
+
+          <div formArrayName="ingredientes" class="mt-5 space-y-3">
+            @for (grupo of ingredientes.controls; track grupo.controls.id.value; let i = $index) {
+              @let tipo = grupo.controls.tipo.value;
+              <div [formGroupName]="i" class="rounded-xl border border-stone-200 bg-stone-50/60 p-4">
+                <div class="grid gap-3 sm:grid-cols-12 sm:items-start">
+                  <!-- Nome -->
+                  <label class="block sm:col-span-12 lg:col-span-3">
+                    <span class="text-xs font-medium text-stone-500">Ingrediente</span>
+                    <input
+                      formControlName="nome"
+                      placeholder="Ex.: Farinha de trigo"
+                      class="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-4"
+                      [class]="campoInvalido(grupo.controls.nome) ? 'border-red-300 focus:ring-red-100' : 'border-stone-200 focus:border-amber-400 focus:ring-amber-100'"
+                    />
+                  </label>
+
+                  <!-- Tipo / Medida -->
+                  <label class="block sm:col-span-4 lg:col-span-2">
+                    <span class="text-xs font-medium text-stone-500">Medida</span>
+                    <select
+                      formControlName="tipo"
+                      (change)="aoMudarTipo(grupo)"
+                      class="mt-1 w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-stone-900 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+                    >
+                      @for (t of tiposMedida; track t) {
+                        <option [value]="t">{{ medidas[t].label }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <!-- Preço Pago / Embalagem de compra -->
+                  <div class="sm:col-span-8 lg:col-span-8">
+                    <span class="text-xs font-medium text-stone-500">Preço pago / embalagem</span>
+                    <div class="mt-1 flex items-center gap-1.5">
+                      <div class="relative flex-1">
+                        <span class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-stone-400">R$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0,00"
+                          formControlName="precoBase"
+                          class="w-full rounded-lg border bg-white py-2 pl-8 pr-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-4"
+                          [class]="campoInvalido(grupo.controls.precoBase) ? 'border-red-300 focus:ring-red-100' : 'border-stone-200 focus:border-amber-400 focus:ring-amber-100'"
+                        />
+                      </div>
+                      <span class="text-xs text-stone-400">por</span>
+                      <input
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        placeholder="1"
+                        formControlName="quantidadeCompra"
+                        class="w-16 rounded-lg border bg-white py-2 px-2 text-center text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-4"
+                        [class]="campoInvalido(grupo.controls.quantidadeCompra) ? 'border-red-300 focus:ring-red-100' : 'border-stone-200 focus:border-amber-400 focus:ring-amber-100'"
+                      />
+                      <select
+                        formControlName="unidadeCompra"
+                        class="rounded-lg border border-stone-200 bg-white py-2 px-2 text-sm font-medium text-stone-800 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+                      >
+                        @for (u of medidas[tipo].unidades; track u) {
+                          <option [value]="u">{{ rotuloUnidade[u] }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <!-- Espaço reservado para o custo calculado -->
+
+                  <!-- Quantidade Usada na receita -->
+                  <div class="sm:col-span-8 lg:col-span-8">
+                    <span class="text-xs font-medium text-stone-500">Qtd. usada</span>
+                    <div class="mt-1 flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        placeholder="0"
+                        formControlName="quantidadeUsada"
+                        class="w-full rounded-lg border bg-white py-2 px-3 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-4"
+                        [class]="campoInvalido(grupo.controls.quantidadeUsada) ? 'border-red-300 focus:ring-red-100' : 'border-stone-200 focus:border-amber-400 focus:ring-amber-100'"
+                      />
+                      <select
+                        formControlName="unidadeUso"
+                        class="rounded-lg border border-stone-200 bg-white py-2 px-2 text-sm font-medium text-stone-800 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
+                      >
+                        @for (u of medidas[tipo].unidades; track u) {
+                          <option [value]="u">{{ rotuloUnidade[u] }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Custo Calculado -->
+                  <div class="flex items-end justify-between sm:col-span-4 lg:col-span-2 lg:flex-col lg:items-end lg:justify-start">
+                    <div class="lg:text-right">
+                      <span class="block text-xs font-medium text-stone-500">Custo</span>
+                      <span class="mt-1 block py-2 text-base font-semibold text-stone-900">
+                        {{ custoIngrediente({
+                            precoBase: grupo.controls.precoBase.value ?? 0,
+                            quantidadeCompra: grupo.controls.quantidadeCompra.value ?? 1,
+                            unidadeCompra: grupo.controls.unidadeCompra.value,
+                            quantidadeUsada: grupo.controls.quantidadeUsada.value ?? 0,
+                            unidadeUso: grupo.controls.unidadeUso.value
+                          }) | currency: 'BRL' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-2 flex items-center justify-between border-t border-stone-200/70 pt-2">
+                  <span class="text-xs text-stone-400">
+                    @if (tipo === 'peso') {
+                      Ex.: comprou 1 kg por R$ 6,00 e usou 500 g — ou comprou 500 g por R$ 3,00 e usou 2 kg.
+                    } @else if (tipo === 'volume') {
+                      Ex.: comprou 1 L por R$ 5,00 e usou 200 ml — ou comprou 200 ml e usou 1 L.
+                    } @else {
+                      Ex.: comprou 1 un por R$ 0,80 e usou 3 un.
+                    }
+                  </span>
+                  <button
+                    type="button"
+                    (click)="removerIngrediente(i)"
+                    class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-stone-500 transition hover:bg-red-50 hover:text-red-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                    </svg>
+                    Remover
+                  </button>
+                </div>
+              </div>
+            } @empty {
+              <p class="rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">
+                Nenhum ingrediente adicionado ainda.
+              </p>
+            }
+          </div>
+
+          <button
+            type="button"
+            (click)="adicionarIngrediente()"
+            class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/50 py-3 font-medium text-amber-700 transition hover:border-amber-400 hover:bg-amber-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+            </svg>
+            Adicionar ingrediente
+          </button>
+        </section>
+      </div>
+
+      <!-- Resumo -->
+      <aside class="lg:sticky lg:top-24 lg:self-start">
+        <div class="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+          <div class="bg-stone-900 p-6 text-white">
+            <p class="text-sm font-medium text-stone-400">Custo total da receita</p>
+            <p class="mt-1 text-4xl font-bold tracking-tight">{{ total() | currency: 'BRL' }}</p>
+            <p class="mt-1 text-sm text-stone-400">
+              {{ ingredientes.length }} {{ ingredientes.length === 1 ? 'ingrediente' : 'ingredientes' }}
+            </p>
+          </div>
+
+          <dl class="divide-y divide-stone-100 px-6">
+            @if (rendimento() > 1) {
+              <div class="flex items-center justify-between py-4">
+                <dt class="text-sm text-stone-500">Custo por unidade</dt>
+                <dd class="text-lg font-semibold text-stone-900">{{ porUnidade() | currency: 'BRL' }}</dd>
+              </div>
+            }
+            @if (margem() > 0) {
+              <div class="flex items-center justify-between py-4">
+                <dt class="text-sm text-stone-500">Lucro {{ rendimento() > 1 ? 'por unidade' : '' }} ({{ margem() }}%)</dt>
+                <dd class="text-lg font-semibold text-stone-900">{{ lucroPorUnidade() | currency: 'BRL' }}</dd>
+              </div>
+              <div class="flex items-center justify-between py-4">
+                <dt class="text-sm font-medium text-stone-700">Preço de venda sugerido</dt>
+                <dd class="text-2xl font-bold text-emerald-600">{{ sugerido() | currency: 'BRL' }}</dd>
+              </div>
+            }
+          </dl>
+
+          @if (composicao().length) {
+            <div class="border-t border-stone-100 p-6">
+              <h3 class="text-sm font-semibold text-stone-900">Composição do custo</h3>
+              <ul class="mt-4 space-y-3">
+                @for (c of composicao(); track c.id) {
+                  <li>
+                    <div class="flex items-baseline justify-between gap-2 text-sm">
+                      <span class="truncate text-stone-700">{{ c.nome }}</span>
+                      <span class="shrink-0 text-stone-500">{{ c.pct | number: '1.0-1' }}%</span>
+                    </div>
+                    <div class="mt-1 h-2 overflow-hidden rounded-full bg-stone-100">
+                      <div class="h-full rounded-full bg-amber-400 transition-all" [style.width.%]="c.pct"></div>
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </aside>
+    </div>
+  </form>
+}
+
