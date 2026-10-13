@@ -42,3 +42,80 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# ==========================================
+# 1. Dependências e logs do Node.js
+# ==========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ==========================================
+# 2. Compilação do Angular / Ionic
+# ==========================================
+.angular/
+dist/
+www/
+out/
+.tmp/
+.sass-cache/
+
+# ==========================================
+# 3. Android & Gradle (Nativo / Capacitor)
+# ==========================================
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/local.properties
+android/.cxx/
+
+# Arquivos de saída compilados do Android
+*.apk
+*.aab
+*.ap_
+
+# ==========================================
+# 4. SEGURANÇA MÁXIMA (Chaves e Senhas)
+# ==========================================
+# Nunca envie suas chaves de assinatura para o repositório!
+*.jks
+*.keystore
+google-services.json
+auth.json
+
+# ==========================================
+# 5. Configurações de IDE e SO
+# ==========================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS e Linux
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# 6. Variáveis de ambiente locais
+# ==========================================
+.env
+.env.local
+.env.*.local

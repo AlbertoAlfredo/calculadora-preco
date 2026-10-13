@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.calculadorapreco.app',
+  appId: 'com.calculadorapreco',
   appName: 'Calculadora de Preço',
   webDir: 'dist/calculadora-preco/browser',
   plugins: {
